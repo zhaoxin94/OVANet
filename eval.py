@@ -229,7 +229,8 @@ def h_score_compute(label_all, pred_class, class_list):
         per_class_num[i] += float(len(t_ind[0]))
     open_class = len(class_list)
     per_class_acc = per_class_correct / per_class_num
-    known_acc = per_class_acc[:open_class - 1].mean()
+    # zhaoxin: fix a bug
+    known_acc = per_class_acc[:len(class_list) - 1].mean()
     unknown = per_class_acc[-1]
     h_score = 2 * known_acc * unknown / (known_acc + unknown)
     return h_score, known_acc, unknown
