@@ -18,7 +18,7 @@ def ova_loss(out_open, label):
     out_open = F.softmax(out_open, 1)
     label_p = torch.zeros((out_open.size(0),
                            out_open.size(2))).long().cuda()
-    label_range = torch.range(0, out_open.size(0) - 1).long()
+    label_range = torch.arange(0, out_open.size(0)).long()
     label_p[label_range, label] = 1
     label_n = 1 - label_p
     open_loss_pos = torch.mean(torch.sum(-torch.log(out_open[:, 1, :]

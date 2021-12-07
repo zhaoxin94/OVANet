@@ -49,7 +49,7 @@ def feat_get(step, G, Cs, dataset_source, dataset_target, save_path,
             if ova:
                 out_open = Cs[1](feat_t)
                 out_open = F.softmax(out_open.view(out_t.size(0), 2, -1), 1)
-                tmp_range = torch.range(0, out_t.size(0) - 1).long().cuda()
+                tmp_range = torch.arange(0, out_t.size(0)).long().cuda()
                 pred_unk = out_open[tmp_range, 0, pred]
                 weights_open = Cs[1].module.fc.weight.data.cpu().numpy()
             else:
@@ -117,7 +117,7 @@ def test(step, dataset_test, name, n_share, G, Cs,
             else:
                 out_open = Cs[1](feat)
                 out_open = F.softmax(out_open.view(out_t.size(0), 2, -1),1)
-                tmp_range = torch.range(0, out_t.size(0)-1).long().cuda()
+                tmp_range = torch.arange(0, out_t.size(0)).long().cuda()
                 pred_unk = out_open[tmp_range, 0, pred]
                 ind_unk = np.where(pred_unk.data.cpu().numpy() > 0.5)[0]
             pred[ind_unk] = open_class

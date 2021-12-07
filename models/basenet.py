@@ -26,7 +26,9 @@ class ResBase(nn.Module):
             self.features = model_ft
         else:
             mod = list(model_ft.children())
+            print('model children:', mod)
             mod.pop()
+            print('after pop', mod)
             self.features = nn.Sequential(*mod)
 
 

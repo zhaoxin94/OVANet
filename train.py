@@ -49,8 +49,8 @@ parser.add_argument('--multi', type=float,
 args = parser.parse_args()
 
 config_file = args.config
-conf = yaml.load(open(config_file))
-save_config = yaml.load(open(config_file))
+conf = yaml.safe_load(open(config_file))
+save_config = yaml.safe_load(open(config_file))
 conf = easydict.EasyDict(conf)
 gpu_devices = ','.join([str(id) for id in args.gpu_devices])
 os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
@@ -146,7 +146,12 @@ def train():
             ent_open = open_entropy(out_open_t)
             all += args.multi * ent_open
             log_values.append(ent_open.item())
-            log_string += "Loss Open Target: {:.6f}"
+            log_string += "Loss Open Target: {:.6f} "
+
+        # zhaoxin add
+        lr = opt_c.param_groups[0]["lr"]
+        log_string += "learning rate: {:.4f}"
+        log_values.append(lr)
         with amp.scale_loss(all, [opt_g, opt_c]) as scaled_loss:
             scaled_loss.backward()
         opt_g.step()
