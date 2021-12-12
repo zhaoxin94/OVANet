@@ -1,5 +1,9 @@
 ## [OVANet: One-vs-All Network for Universal Domain Adaptation (ICCV2021)](https://arxiv.org/pdf/2104.03344.pdf)
 
+### Fork
+Fix bugs and adapt to my own environment.
+Use this to reproduce the results reported by the author.
+
 ![OVANet Overview](images/animation_ovanet.gif)
 
 
