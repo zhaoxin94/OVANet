@@ -35,8 +35,8 @@ def log_set(kwargs):
                                                                                target=target_data,
                                                                                network=network,
                                                                                hp=str(multi))
-    logname = os.path.join("record", kwargs["exp_name"],
-                           os.path.basename(conf_file).replace(".yaml", ""), logname)
+    logname = os.path.join("record", 
+                           os.path.basename(conf_file).replace(".yaml", ""), kwargs["exp_name"], logname)
     if not os.path.exists(os.path.dirname(logname)):
         os.makedirs(os.path.dirname(logname))
     print("record in %s " % logname)
