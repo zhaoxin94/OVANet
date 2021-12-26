@@ -13,40 +13,74 @@ from utils.lr_schedule import inv_lr_scheduler
 from utils.defaults import get_dataloaders, get_models
 from eval import test
 import argparse
+import random
+import numpy as np
 
-parser = argparse.ArgumentParser(description='Pytorch OVANet',
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--config', type=str, default='config.yaml',
+parser = argparse.ArgumentParser(
+    description='Pytorch OVANet',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--config',
+                    type=str,
+                    default='config.yaml',
                     help='/path/to/config/file')
 
-parser.add_argument('--source_data', type=str,
+parser.add_argument('--source_data',
+                    type=str,
                     default='./utils/source_list.txt',
                     help='path to source list')
-parser.add_argument('--target_data', type=str,
+parser.add_argument('--target_data',
+                    type=str,
                     default='./utils/target_list.txt',
                     help='path to target list')
-parser.add_argument('--log-interval', type=int,
+parser.add_argument('--log-interval',
+                    type=int,
                     default=100,
                     help='how many batches before logging training status')
-parser.add_argument('--exp_name', type=str,
+parser.add_argument('--exp_name',
+                    type=str,
                     default='office',
                     help='/path/to/config/file')
-parser.add_argument('--network', type=str,
+parser.add_argument('--network',
+                    type=str,
                     default='resnet50',
                     help='network name')
-parser.add_argument("--gpu_devices", type=int, nargs='+',
-                    default=None, help="")
-parser.add_argument("--no_adapt",
-                    default=False, action='store_true')
-parser.add_argument("--save_model",
-                    default=False, action='store_true')
-parser.add_argument("--save_path", type=str,
+parser.add_argument("--gpu_devices",
+                    type=int,
+                    nargs='+',
+                    default=None,
+                    help="")
+parser.add_argument("--no_adapt", default=False, action='store_true')
+parser.add_argument("--save_model", default=False, action='store_true')
+parser.add_argument("--save_path",
+                    type=str,
                     default="record/ova_model",
                     help='/path/to/save/model')
-parser.add_argument('--multi', type=float,
+parser.add_argument('--multi',
+                    type=float,
                     default=0.1,
                     help='weight factor for adaptation')
+parser.add_argument("--seed",
+                    type=int,
+                    default=-1,
+                    help="only positive value enables a fixed seed")
+parser.add_argument("--output-dir",
+                    type=str,
+                    default="",
+                    help="output directory")
 args = parser.parse_args()
+
+
+def set_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+# set seed
+if args.seed >= 0:
+    print("Setting fixed seed: {}".format(args.seed))
+    set_random_seed(args.seed)
 
 config_file = args.config
 conf = yaml.safe_load(open(config_file))
@@ -102,10 +136,14 @@ def train():
             data_iter_s = iter(source_loader)
         data_t = next(data_iter_t)
         data_s = next(data_iter_s)
-        inv_lr_scheduler(param_lr_g, opt_g, step,
+        inv_lr_scheduler(param_lr_g,
+                         opt_g,
+                         step,
                          init_lr=conf.train.lr,
                          max_iter=conf.train.min_step)
-        inv_lr_scheduler(param_lr_c, opt_c, step,
+        inv_lr_scheduler(param_lr_c,
+                         opt_c,
+                         step,
                          init_lr=conf.train.lr,
                          max_iter=conf.train.min_step)
         img_s = data_s[0]
@@ -136,9 +174,13 @@ def train():
                      'Loss Open: {:.4f} ' \
                      'Loss Open Source Positive: {:.4f} ' \
                      'Loss Open Source Negative: {:.4f} '
-        log_values = [step, conf.train.min_step,
-                      loss_s.item(),  loss_open.item(),
-                      open_loss_pos.item(), open_loss_neg.item()]
+        log_values = [
+            step, conf.train.min_step,
+            loss_s.item(),
+            loss_open.item(),
+            open_loss_pos.item(),
+            open_loss_neg.item()
+        ]
         if not args.no_adapt:
             feat_t = G(img_t)
             out_open_t = C2(feat_t)
@@ -161,13 +203,17 @@ def train():
         if step % conf.train.log_interval == 0:
             print(log_string.format(*log_values))
         if step > 0 and step % conf.test.test_interval == 0:
-            acc_o, h_score = test(step, test_loader, logname, n_share, G,
-                                  [C1, C2], open=open)
+            acc_o, h_score = test(step,
+                                  test_loader,
+                                  logname,
+                                  n_share,
+                                  G, [C1, C2],
+                                  open=open)
             print("acc all %s h_score %s " % (acc_o, h_score))
             G.train()
             C1.train()
             if args.save_model:
-                save_path = "%s_%s.pth"%(args.save_path, step)
+                save_path = "%s_%s.pth" % (args.save_path, step)
                 save_model(G, C1, C2, save_path)
 
 

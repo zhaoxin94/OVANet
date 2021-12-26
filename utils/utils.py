@@ -17,8 +17,9 @@ def get_model_mme(net, num_class=13, temp=0.05, top=False, norm=True):
         dim = 4096
     if top:
         dim = 1000
-    print("selected network %s"%net)
+    print("selected network %s" % net)
     return model_g, dim
+
 
 def log_set(kwargs):
     source_data = kwargs["source_data"]
@@ -30,13 +31,13 @@ def log_set(kwargs):
     #args = kwargs["args"]
 
     target_data = os.path.splitext(os.path.basename(target_data))[0]
-    logname = "{file}_{source}2{target}_{network}_hp_{hp}".format(file=script_name.replace(".py", ""),
-                                                                               source=source_data.split("_")[1],
-                                                                               target=target_data,
-                                                                               network=network,
-                                                                               hp=str(multi))
-    logname = os.path.join("record", 
-                           os.path.basename(conf_file).replace(".yaml", ""), kwargs["exp_name"], logname)
+    # logname = "{file}_{source}2{target}_{network}_hp_{hp}".format(file=script_name.replace(".py", ""),
+    #                                                                            source=source_data.split("_")[1],
+    #                                                                            target=target_data,
+    #                                                                            network=network,
+    #                                                                            hp=str(multi))
+    logname = "log.txt"
+    logname = os.path.join(kwargs["output_dir"], logname)
     if not os.path.exists(os.path.dirname(logname)):
         os.makedirs(os.path.dirname(logname))
     print("record in %s " % logname)
@@ -55,6 +56,7 @@ def save_model(model_g, model_c1, model_c2, save_path):
         'c2_state_dict': model_c2.state_dict(),
     }
     torch.save(save_dic, save_path)
+
 
 def load_model(model_g, model_c, load_path):
     checkpoint = torch.load(load_path)
