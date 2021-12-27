@@ -38,7 +38,7 @@ def write_now(row, colwidth=10):
 
     def format_val(x):
         if np.issubdtype(type(x), np.floating):
-            x = "{:.2f}".format(x)
+            x = "{:.4f}".format(x)
         return str(x).ljust(colwidth)[:colwidth]
 
     return sep.join([format_val(x) for x in row]) + "\n"

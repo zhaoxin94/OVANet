@@ -82,6 +82,9 @@ if args.seed >= 0:
     print("Setting fixed seed: {}".format(args.seed))
     set_random_seed(args.seed)
 
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.detrministic = True
+
 config_file = args.config
 conf = yaml.safe_load(open(config_file))
 save_config = yaml.safe_load(open(config_file))
