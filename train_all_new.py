@@ -102,8 +102,8 @@ if __name__ == '__main__':
 
                     os.system(f'python train_new.py '
                               f'--config  {config_file} '
-                              f'--source {source_txt} '
-                              f'--target {target_txt} '
+                              f'--source_data {source_txt} '
+                              f'--target_data {target_txt} '
                               f'--gpu {args.gpu} '
                               f'--output-dir {output_dir} '
                               f'--seed {seed} '

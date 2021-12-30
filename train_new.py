@@ -10,14 +10,13 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from apex import amp, optimizers
 from torch.cuda.amp import GradScaler
 from torch.cuda.amp import autocast
 
 from utils.utils import log_set, save_model
 from utils.loss import ova_loss, open_entropy
 from utils.lr_schedule import inv_lr_scheduler
-from utils.defaults import get_dataloaders, get_models_new
+from utils.defaults_new import get_dataloaders, get_models_new
 from eval import test
 
 parser = argparse.ArgumentParser(
@@ -71,11 +70,11 @@ parser.add_argument("--output-dir",
                     type=str,
                     default="",
                     help="output directory")
-parser.add_argument("--amp-type",
-                    type=str,
-                    default='nvidia',
-                    choices=['nvidia', 'torch'])
+parser.add_argument("--amp-type", type=str, default='torch', choices=['torch'])
 args = parser.parse_args()
+
+print(args.source_data)
+print(args.target_data)
 
 
 def set_random_seed(seed):
@@ -132,9 +131,9 @@ ndata = target_folder.__len__()
 
 
 def train():
-    if args.amp_type == 'torch':
-        print('Use Pytorch buildin AMP module!')
-        scaler = GradScaler()
+
+    print('Use Pytorch buildin AMP module!')
+    scaler = GradScaler()
 
     criterion = nn.CrossEntropyLoss().cuda()
     print('train start!')
@@ -172,42 +171,7 @@ def train():
         opt_c.zero_grad()
         C2.module.weight_norm()
 
-        if args.amp_type == 'torch':
-            with autocast():
-                ## Source loss calculation
-                feat = G(img_s)
-                out_s = C1(feat)
-                out_open = C2(feat)
-                ## source classification loss
-                loss_s = criterion(out_s, label_s)
-                ## open set loss for source
-                out_open = out_open.view(out_s.size(0), 2, -1)
-                open_loss_pos, open_loss_neg = ova_loss(out_open, label_s)
-                ## b x 2 x C
-                loss_open = 0.5 * (open_loss_pos + open_loss_neg)
-                ## open set loss for target
-                all = loss_s + loss_open
-                log_string = 'Train {}/{} \t ' \
-                            'Loss Source: {:.4f} ' \
-                            'Loss Open: {:.4f} ' \
-                            'Loss Open Source Positive: {:.4f} ' \
-                            'Loss Open Source Negative: {:.4f} '
-                log_values = [
-                    step, conf.train.min_step,
-                    loss_s.item(),
-                    loss_open.item(),
-                    open_loss_pos.item(),
-                    open_loss_neg.item()
-                ]
-                if not args.no_adapt:
-                    feat_t = G(img_t)
-                    out_open_t = C2(feat_t)
-                    out_open_t = out_open_t.view(img_t.size(0), 2, -1)
-                    ent_open = open_entropy(out_open_t)
-                    all += args.multi * ent_open
-                    log_values.append(ent_open.item())
-                    log_string += "Loss Open Target: {:.6f} "
-        elif args.amp_type == 'nvidia':
+        with autocast():
             ## Source loss calculation
             feat = G(img_s)
             out_s = C1(feat)
@@ -241,31 +205,19 @@ def train():
                 all += args.multi * ent_open
                 log_values.append(ent_open.item())
                 log_string += "Loss Open Target: {:.6f} "
-        else:
-            raise NotImplementedError
 
         # zhaoxin add
         lr = opt_c.param_groups[0]["lr"]
         log_string += "learning rate: {:.4f}"
         log_values.append(lr)
 
-        if args.amp_type == 'nvidia':
-            with amp.scale_loss(all, [opt_g, opt_c]) as scaled_loss:
-                scaled_loss.backward()
-            opt_g.step()
-            opt_c.step()
-            opt_g.zero_grad()
-            opt_c.zero_grad()
-        elif args.amp_type == 'torch':
-            scaler.scale(all).backward()
-            scaler.step(opt_g)
-            scaler.step(opt_c)
-            opt_g.zero_grad()
-            opt_c.zero_grad()
+        scaler.scale(all).backward()
+        scaler.step(opt_g)
+        scaler.step(opt_c)
+        opt_g.zero_grad()
+        opt_c.zero_grad()
 
-            scaler.update()
-        else:
-            raise NotImplementedError
+        scaler.update()
 
         if step % conf.train.log_interval == 0:
             print(log_string.format(*log_values))
