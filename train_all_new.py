@@ -40,8 +40,8 @@ if __name__ == '__main__':
                         help="Backbone")
     parser.add_argument("--amp-type",
                         type=str,
-                        default='nvidia',
-                        choices=['nvidia', 'torch'])
+                        default='torch',
+                        choices=['torch'])
 
     args = parser.parse_args()
 
