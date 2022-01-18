@@ -28,6 +28,7 @@ def log_set(kwargs):
     conf_file = kwargs["config_file"]
     script_name = kwargs["script_name"]
     multi = kwargs["multi"]
+    seed = kwargs["seed"]
     #args = kwargs["args"]
 
     target_data = os.path.splitext(os.path.basename(target_data))[0]
@@ -46,6 +47,7 @@ def log_set(kwargs):
     logging.basicConfig(filename=logname, format="%(message)s")
     logger.setLevel(logging.INFO)
     logger.info("{}_2_{}".format(source_data, target_data))
+    logger.info("use random seed:{}".format(seed))
     return logname
 
 
