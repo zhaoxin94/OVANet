@@ -208,7 +208,7 @@ def train():
 
         # zhaoxin add
         lr = opt_c.param_groups[0]["lr"]
-        log_string += "learning rate: {:.4f}"
+        log_string += "learning rate: {:.8f}"
         log_values.append(lr)
 
         scaler.scale(all).backward()

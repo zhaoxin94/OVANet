@@ -45,7 +45,7 @@ def feat_get(step, G, Cs, dataset_source, dataset_target, save_path,
 
             out_t = Cs[0](feat_t)
             pred = out_t.data.max(1)[1]
-            out_t = F.softmax(out_t)
+            out_t = F.softmax(out_t, dim=1)
             if ova:
                 out_open = Cs[1](feat_t)
                 out_open = F.softmax(out_open.view(out_t.size(0), 2, -1), 1)
@@ -109,7 +109,7 @@ def test(step, dataset_test, name, n_share, G, Cs,
                 class_list.append(open_class)
             pred = out_t.data.max(1)[1]
             correct_close += pred.eq(label_t.data).cpu().sum()
-            out_t = F.softmax(out_t)
+            out_t = F.softmax(out_t, dim=1)
             entr = -torch.sum(out_t * torch.log(out_t), 1).data.cpu().numpy()
             if entropy:
                 pred_unk = -torch.sum(out_t * torch.log(out_t), 1)

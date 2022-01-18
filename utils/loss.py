@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 def entropy(p, prob=True, mean=True):
     if prob:
-        p = F.softmax(p)
+        p = F.softmax(p, dim=1)
     en = -torch.sum(p * torch.log(p+1e-5), 1)
     if mean:
         return torch.mean(en)
