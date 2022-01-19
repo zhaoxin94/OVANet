@@ -39,11 +39,6 @@ if __name__ == '__main__':
                         "-b",
                         default="resnet50",
                         help="Backbone")
-    parser.add_argument("--amp-type",
-                        type=str,
-                        default='torch',
-                        choices=['torch'])
-
     args = parser.parse_args()
 
     ##################################################################################
@@ -102,11 +97,10 @@ if __name__ == '__main__':
             source_txt = source_template.format(source)
             target_txt = target_template.format(target, n_unk)
 
-            os.system(f'python train_new.py '
+            os.system(f'python train_amp.py '
                       f'--config  {config_file} '
                       f'--source_data {source_txt} '
                       f'--target_data {target_txt} '
                       f'--gpu {args.gpu} '
                       f'--output-dir {output_dir} '
-                      f'--seed {seed} '
-                      f'--amp-type {args.amp_type}')
+                      f'--seed {seed}')

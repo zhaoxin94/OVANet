@@ -109,28 +109,15 @@ def parse_function(*metrics, directory="", end_signal=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--method", "-m", default="OVA", help="Method")
-    parser.add_argument("--dataset",
-                        "-d",
-                        default="officehome",
-                        help="Dataset",
-                        choices=['office31', 'officehome'])
-    parser.add_argument("--backbone",
-                        "-b",
-                        default="resnet50",
-                        help="Backbone")
-    parser.add_argument('--exp_name', type=str, default='')
-    parser.add_argument('--mode', type=str, default='ODA')
+    parser.add_argument("--path", "-p", type=str, default='', help="Method")
 
     args = parser.parse_args()
 
     ###############################################################################
-    exp_info = args.exp_name
-    if exp_info:
-        exp_info = '_' + exp_info
 
-    base_dir = osp.join('output', args.method, args.dataset + '_' + args.mode,
-                        args.backbone + exp_info)
+    base_dir = args.path
+
+    method = base_dir.split('/')[1]
 
     print('*****************************************************************')
     print(f'Extract results from {base_dir}')
@@ -177,7 +164,7 @@ if __name__ == '__main__':
 
     results_path = osp.join(base_dir, 'collect_results.txt')
     with open(results_path, 'w') as f:
-        f.write(write_now([args.method] + tasks))
+        f.write(write_now([method] + tasks))
         for key in metric_names:
             row = [key]
             row += list(final_results[key])

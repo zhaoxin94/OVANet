@@ -70,7 +70,6 @@ parser.add_argument("--output-dir",
                     type=str,
                     default="",
                     help="output directory")
-parser.add_argument("--amp-type", type=str, default='torch', choices=['torch'])
 args = parser.parse_args()
 
 print(args.source_data)
