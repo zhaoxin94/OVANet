@@ -1,6 +1,6 @@
 data:
   dataset:
-    name: officehome # choices are ['office', 'officehome', 'caltech-imagenet', 'visda2017']
+    name: visda2017 # choices are ['office', 'officehome', 'caltech-imagenet', 'visda2017']
     n_share: 6 # number of classes to be shared
     n_source_private: 3 # number of classes in source private domain
     n_total: 12 # number of classes in total

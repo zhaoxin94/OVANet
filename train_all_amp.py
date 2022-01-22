@@ -61,7 +61,10 @@ if __name__ == '__main__':
             target_template = './txt/target_{}_univ.txt'
     elif args.dataset == 'visda':
         domains = ["synthetic", "real"]
-        config_file = ''
+        config_file = 'configs/visda-train-config_{}.yaml'.format(args.mode)
+        if args.mode == 'OPDA':
+            source_template = './txt/source_{}_univ.txt'
+            target_template = './txt/target_{}_univ.txt'
     elif args.dataset == 'domainnet':
         domains = [
             'clipart', 'infograph', 'painting', 'quickdraw', 'real', 'sketch'
@@ -90,6 +93,9 @@ if __name__ == '__main__':
                     if args.seed < 0:
                         seed = seed_hash(args.method, args.backbone,
                                          args.dataset, source, target, i)
+
+                    if args.dataset == 'visda':
+                        source = target = 'list'
 
                     source_txt = source_template.format(source)
                     target_txt = target_template.format(target)
