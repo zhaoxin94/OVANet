@@ -41,12 +41,13 @@ def gen_list(data_root, dataset_name, domains, n_share, n_source_private):
                     assert source_classes.index(
                         class_name) == all_classes.index(
                             class_name), 'someting wrong'
-                    source_list.append(path + ' ' + str(label) + '\n')
+                    source_list.append('data/' + path + ' ' + str(label) +
+                                       '\n')
                 else:
                     continue
 
-        with open(osp.join('txt_new',
-                           'source_' + domain + '_univ.txt'), 'w') as f_source:
+        with open(osp.join('txt_new', 'source_' + 'd' + domain + '_univ.txt'),
+                  'w') as f_source:
             f_source.writelines(source_list)
 
         # construct target txt
@@ -57,16 +58,18 @@ def gen_list(data_root, dataset_name, domains, n_share, n_source_private):
 
                 if class_name in public_classes:
                     label = all_classes.index(class_name)
-                    target_list.append(path + ' ' + str(label) + '\n')
+                    target_list.append('data/' + path + ' ' + str(label) +
+                                       '\n')
                 elif class_name in target_private_classes:
                     label = all_classes.index("unknown")
                     class_name = "unknown"
-                    target_list.append(path + ' ' + str(label) + '\n')
+                    target_list.append('data/' + path + ' ' + str(label) +
+                                       '\n')
                 else:
                     continue
 
-        with open(osp.join('txt_new',
-                           'target_' + domain + '_univ.txt'), 'w') as f_target:
+        with open(osp.join('txt_new', 'target_' + 'd' + domain + '_univ.txt'),
+                  'w') as f_target:
             f_target.writelines(target_list)
 
 
