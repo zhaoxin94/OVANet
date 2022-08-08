@@ -41,7 +41,7 @@ def gen_list(data_root, dataset_name, domains, n_share, n_source_private):
                     assert source_classes.index(
                         class_name) == all_classes.index(
                             class_name), 'someting wrong'
-                    source_list.append('data/' + path + ' ' + str(label) +
+                    source_list.append('data/domainnet/' + path + ' ' + str(label) +
                                        '\n')
                 else:
                     continue
@@ -58,12 +58,12 @@ def gen_list(data_root, dataset_name, domains, n_share, n_source_private):
 
                 if class_name in public_classes:
                     label = all_classes.index(class_name)
-                    target_list.append('data/' + path + ' ' + str(label) +
+                    target_list.append('data/domainnet/' + path + ' ' + str(label) +
                                        '\n')
                 elif class_name in target_private_classes:
                     label = all_classes.index("unknown")
                     class_name = "unknown"
-                    target_list.append('data/' + path + ' ' + str(label) +
+                    target_list.append('data/domainnet/' + path + ' ' + str(label) +
                                        '\n')
                 else:
                     continue
