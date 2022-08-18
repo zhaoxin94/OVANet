@@ -78,7 +78,7 @@ if __name__ == '__main__':
     target = args.target
 
     # num_unks = [5, 10, 15, 20, 25, 30, 35, 40, 45]
-    num_unks = [50]
+    num_unks = [5, 15, 25, 35]
 
     for n_unk in num_unks:
         for i in range(args.n_trials):
