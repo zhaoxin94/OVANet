@@ -74,19 +74,21 @@ if __name__ == '__main__':
     if exp_info:
         exp_info = '_' + exp_info
 
-    amp_type = '_' + args.amp_type
-
     source = args.source
     target = args.target
 
-    num_unks = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+    # num_unks = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+    if args.mode == 'OPDA':
+        num_unks = [10, 15, 20, 25, 30, 35, 40, 45]
+    else:
+        num_unks = [5, 10, 15, 20, 25, 30, 35]
 
     for n_unk in num_unks:
         for i in range(args.n_trials):
             base_dir = osp.join(
                 'output', args.method,
                 args.dataset + '_' + args.mode + '_' + str(n_unk),
-                args.backbone + exp_info + amp_type)
+                args.backbone + exp_info)
             output_dir = osp.join(base_dir, source + '_to_' + target,
                                   str(i + 1))
             seed = args.seed
