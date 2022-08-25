@@ -24,7 +24,7 @@ train:
   thr: 2.649158683274018
   margin: 0.5
 test:
-  test_interval: 500
+  test_interval: 5000
   test_only: False # test a given model and exit
   resume_file: '' # model to test
   test_feat: False
