@@ -60,8 +60,8 @@ def save_model(model_g, model_c1, model_c2, save_path):
     torch.save(save_dic, save_path)
 
 
-def load_model(model_g, model_c, load_path):
+def load_model(model_g, model_c1, load_path):
     checkpoint = torch.load(load_path)
     model_g.load_state_dict(checkpoint['g_state_dict'])
-    model_c.load_state_dict(checkpoint['c_state_dict'])
-    return model_g, model_c
+    model_c1.load_state_dict(checkpoint['c1_state_dict'])
+    return model_g, model_c1
