@@ -234,7 +234,8 @@ def train():
 
         if step == 10000:
             if args.save_model:
-                save_path = "model_%s.pth" % (step)
+                save_name = "model_%s.pth" % (step)
+                save_path = os.path.join(save_path, save_name)
                 save_model(G, C1, C2, save_path)
 
 
