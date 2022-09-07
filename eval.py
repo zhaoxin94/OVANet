@@ -5,13 +5,60 @@ from torch.autograd import Variable
 import os
 import logging
 from sklearn.preprocessing import label_binarize
-from sklearn.metrics import f1_score, roc_auc_score,  accuracy_score
+from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import matplotlib.colors as col
 
 
+def visulaize_TSNE_OSDA(feats,
+                        labels,
+                        n_classes,
+                        output_dir,
+                        epoch=None,
+                        known_color='orangered',
+                        unknown_color='dodgerblue'):
+    feats = feats.cpu().detach().numpy()
+    labels = labels.cpu().detach().numpy()
+
+    known_ind = np.where(labels < n_classes)
+    unknown_ind = np.where(labels >= n_classes)
+
+    known_feats = feats[known_ind]
+    unknown_feats = feats[unknown_ind]
+
+    all_feats = np.concatenate([known_feats, unknown_feats], axis=0)
+    all_labels = np.concatenate(
+        (np.zeros(len(known_feats)), np.ones(len(unknown_feats))))
+
+    print('all_feats size:', all_feats.shape)
+    print('all_labels size:', all_labels.shape)
+
+    X_tsne = TSNE(n_components=2, random_state=33).fit_transform(all_feats)
+
+    plt.figure(figsize=(10, 10))
+    plt.scatter(X_tsne[:, 0],
+                X_tsne[:, 1],
+                c=all_labels,
+                cmap=col.ListedColormap([known_color, unknown_color]),
+                s=20)
+    plt.axis('tight')
+    plt.xticks(())  # ignore xticks
+    plt.yticks(())  # ignore yticks
+    ax = plt.gca()
+    ax.set_facecolor('white')
+    if epoch:
+        plt.savefig(os.path.join(output_dir,
+                                 "TSNE_Target-{}.pdf".format(epoch)),
+                    format='pdf',
+                    dpi=600)
+    else:
+        plt.savefig(os.path.join(output_dir, "TSNE_Target.pdf"),
+                    format='pdf',
+                    dpi=600)
 
 
-def feat_get(step, G, Cs, dataset_source, dataset_target, save_path,
-             ova=True):
+def feat_get(step, G, Cs, dataset_source, dataset_target, save_path, ova=True):
     G.eval()
 
     for batch_idx, data in enumerate(dataset_source):
@@ -23,7 +70,6 @@ def feat_get(step, G, Cs, dataset_source, dataset_target, save_path,
             img_s, label_s = Variable(img_s.cuda()), \
                              Variable(label_s.cuda())
             feat_s = G(img_s)
-
 
             if batch_idx == 0:
                 feat_all_s = feat_s.data.cpu().numpy()
@@ -74,21 +120,48 @@ def feat_get(step, G, Cs, dataset_source, dataset_target, save_path,
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
 
-    np.save(os.path.join(save_path, "save_%s_ova_%s_target_feat.npy" % (step, ova)), feat_all)
-    np.save(os.path.join(save_path, "save_%s_ova_%s_target_anom.npy" % (step, ova)), unk_all)
-    np.save(os.path.join(save_path, "save_%s_ova_%s_target_pred.npy" % (step, ova)), pred_all)
-    np.save(os.path.join(save_path, "save_%s_ova_%s_target_soft.npy" % (step, ova)), pred_all_soft)
-    np.save(os.path.join(save_path, "save_%s_ova_%s_source_feat.npy" % (step, ova)), feat_all_s)
-    np.save(os.path.join(save_path, "save_%s_ova_%s_target_label.npy" % (step, ova)), label_all)
-    np.save(os.path.join(save_path, "save_%s_ova_%s_source_label.npy" % (step, ova)), label_all_s)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_target_feat.npy" % (step, ova)), feat_all)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_target_anom.npy" % (step, ova)), unk_all)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_target_pred.npy" % (step, ova)), pred_all)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_target_soft.npy" % (step, ova)),
+        pred_all_soft)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_source_feat.npy" % (step, ova)),
+        feat_all_s)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_target_label.npy" % (step, ova)),
+        label_all)
+    np.save(
+        os.path.join(save_path,
+                     "save_%s_ova_%s_source_label.npy" % (step, ova)),
+        label_all_s)
     if ova:
-        np.save(os.path.join(save_path, "save_%s_ova_%s_weight.npy" % (step, ova)), weights_open)
+        np.save(
+            os.path.join(save_path, "save_%s_ova_%s_weight.npy" % (step, ova)),
+            weights_open)
 
 
-
-
-def test(step, dataset_test, name, n_share, G, Cs,
-         open_class = None, open=False, entropy=False, thr=None):
+def test(step,
+         dataset_test,
+         name,
+         n_share,
+         G,
+         Cs,
+         open_class=None,
+         open=False,
+         entropy=False,
+         thr=None,
+         output_dir=None):
     G.eval()
     for c in Cs:
         c.eval()
@@ -107,6 +180,11 @@ def test(step, dataset_test, name, n_share, G, Cs,
             if batch_idx == 0:
                 open_class = int(out_t.size(1))
                 class_list.append(open_class)
+                labels = label_t
+                feats = feat
+            else:
+                labels = torch.cat((labels, label_t))
+                feats = torch.cat((feats, feat))
             pred = out_t.data.max(1)[1]
             correct_close += pred.eq(label_t.data).cpu().sum()
             out_t = F.softmax(out_t, dim=1)
@@ -116,7 +194,7 @@ def test(step, dataset_test, name, n_share, G, Cs,
                 ind_unk = np.where(entr > thr)[0]
             else:
                 out_open = Cs[1](feat)
-                out_open = F.softmax(out_open.view(out_t.size(0), 2, -1),1)
+                out_open = F.softmax(out_open.view(out_t.size(0), 2, -1), 1)
                 tmp_range = torch.arange(0, out_t.size(0)).long().cuda()
                 pred_unk = out_open[tmp_range, 0, pred]
                 ind_unk = np.where(pred_unk.data.cpu().numpy() > 0.5)[0]
@@ -150,8 +228,8 @@ def test(step, dataset_test, name, n_share, G, Cs,
         ## compute best h-score by grid search. Note that we compupte
         ## this score just to see the difference between learned threshold
         ## and best one.
-        best_th, best_acc, mean_score = select_threshold(pred_all, pred_open,
-                                                         label_all, class_list)
+        best_th, best_acc, mean_score = select_threshold(
+            pred_all, pred_open, label_all, class_list)
 
     else:
         roc = 0.0
@@ -165,29 +243,33 @@ def test(step, dataset_test, name, n_share, G, Cs,
     per_class_acc = per_class_correct / per_class_num
     acc_all = 100. * float(correct) / float(size)
     close_count = float(per_class_num[:len(class_list) - 1].sum())
-    acc_close_all = 100. *float(correct_close) / close_count
-    known_acc = per_class_acc[:len(class_list)-1].mean()
+    acc_close_all = 100. * float(correct_close) / close_count
+    known_acc = per_class_acc[:len(class_list) - 1].mean()
     unknown = per_class_acc[-1]
     h_score = 2 * known_acc * unknown / (known_acc + unknown)
-    output = ["step %s"%step,
-              "closed perclass", list(per_class_acc),
-              "acc per class %s"%(float(per_class_acc.mean())),
-              "acc %s" % float(acc_all),
-              "acc close all %s" % float(acc_close_all),
-              "h score %s" % float(h_score),
-              "roc %s"% float(roc),
-              "roc ent %s"% float(roc_ent),
-              "roc softmax %s"% float(roc_softmax),
-              "best hscore %s"%float(best_acc),
-              "best thr %s"%float(best_th)]
+    output = [
+        "step %s" % step, "closed perclass",
+        list(per_class_acc),
+        "acc per class %s" % (float(per_class_acc.mean())),
+        "acc %s" % float(acc_all),
+        "acc close all %s" % float(acc_close_all),
+        "h score %s" % float(h_score),
+        "roc %s" % float(roc),
+        "roc ent %s" % float(roc_ent),
+        "roc softmax %s" % float(roc_softmax),
+        "best hscore %s" % float(best_acc),
+        "best thr %s" % float(best_th)
+    ]
     logger.info(output)
     print(output)
+
+    visulaize_TSNE_OSDA(feats, labels, open_class, output_dir)
+
     return acc_all, h_score
 
 
-def select_threshold(pred_all, conf_thr, label_all,
-                     class_list, thr=None):
-    num_class  = class_list[-1]
+def select_threshold(pred_all, conf_thr, label_all, class_list, thr=None):
+    num_class = class_list[-1]
     best_th = 0.0
     best_f = 0
     #best_known = 0
@@ -215,7 +297,7 @@ def select_threshold(pred_all, conf_thr, label_all,
             best_unknown = unknown
     mean_score = np.array(scores).mean()
     print("best known %s best unknown %s "
-          "best h-score %s"%(best_known, best_unknown, best_f))
+          "best h-score %s" % (best_known, best_unknown, best_f))
     return best_th, best_f, mean_score
 
 

@@ -54,10 +54,6 @@ parser.add_argument("--gpu_devices",
                     help="")
 parser.add_argument("--no_adapt", default=False, action='store_true')
 parser.add_argument("--save_model", default=False, action='store_true')
-parser.add_argument("--save_path",
-                    type=str,
-                    default="record/ova_model",
-                    help='/path/to/save/model')
 parser.add_argument('--multi',
                     type=float,
                     default=0.1,
@@ -127,6 +123,10 @@ G, C1, C2, opt_g, opt_c, \
 param_lr_g, param_lr_c = get_models_new(inputs)
 
 ndata = target_folder.__len__()
+
+save_path = os.path.join(args.output_dir, 'model')
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
 
 def train():
@@ -226,12 +226,16 @@ def train():
                                   logname,
                                   n_share,
                                   G, [C1, C2],
-                                  open=open)
+                                  open=open,
+                                  output_dir=args.output_dir)
             print("acc all %s h_score %s " % (acc_o, h_score))
             G.train()
             C1.train()
+
+        if step == 10000:
             if args.save_model:
-                save_path = "%s_%s.pth" % (args.save_path, step)
+                save_name = "model_%s.pth" % (step)
+                save_path = os.path.join(save_path, save_name)
                 save_model(G, C1, C2, save_path)
 
 
