@@ -414,7 +414,7 @@ def test(step,
     logger.info(output)
     print(output)
 
-    visulaize_TSNE_OSDA_category(feats, labels, preds, open_class, output_dir)
+    # visulaize_TSNE_OSDA_category(feats, labels, preds, open_class, output_dir)
 
     return acc_all, h_score
 
