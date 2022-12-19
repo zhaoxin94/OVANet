@@ -66,6 +66,8 @@ parser.add_argument("--output-dir",
                     type=str,
                     default="",
                     help="output directory")
+parser.add_argument("--n_share", type=int, default=9)
+parser.add_argument("--n_source_private", type=int, default=0)
 args = parser.parse_args()
 
 print(args.source_data)
@@ -100,9 +102,12 @@ target_data = args.target_data
 evaluation_data = args.target_data
 network = args.network
 use_gpu = torch.cuda.is_available()
-n_share = conf.data.dataset.n_share
-n_source_private = conf.data.dataset.n_source_private
+n_share = args.n_share
+n_source_private = args.n_source_private
 n_total = conf.data.dataset.n_total
+print(
+    f"===>Dataset Info: n_share:{n_share}, n_source_private:{n_source_private}, n_total:{n_total}"
+)
 open = n_total - n_share - n_source_private > 0
 num_class = n_share + n_source_private
 script_name = os.path.basename(__file__)

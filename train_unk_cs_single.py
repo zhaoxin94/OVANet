@@ -21,9 +21,11 @@ if __name__ == '__main__':
         default="cs",
         help="Dataset",
         choices=['office31', 'officehome', 'visda', 'domainnet', 'cs'])
+    parser.add_argument("--source", "-s", type=str)
+    parser.add_argument("--target", "-t", type=str)
     parser.add_argument("--gpu", "-g", default=0, type=int, help="Gpu ID")
     parser.add_argument('--mode', type=str, default='ODA')
-    parser.add_argument('--n_unk', type=int, default=3)
+
     # do not need to modify
     parser.add_argument('--exp_name', type=str, default='unk')
     parser.add_argument('--seed', type=int, default=2022)
@@ -76,40 +78,43 @@ if __name__ == '__main__':
     if exp_info:
         exp_info = '_' + exp_info
 
-    n_unk = args.n_unk
-    base_dir = osp.join('output', args.method,
-                        args.dataset + '_' + args.mode + '_' + str(n_unk),
-                        args.backbone + exp_info)
-    for i in range(args.n_start, args.n_trials):
-        for source in domains:
-            for target in domains:
-                if source != target:
-                    if args.dataset == 'visda' and source == 'real':
-                        print('skip real!')
-                        continue
+    source = args.source
+    target = args.target
 
-                    output_dir = osp.join(base_dir, source + '_to_' + target,
-                                          str(i + 1))
-                    seed = args.seed
-                    if seed < 0:
-                        seed = seed_hash(args.method, args.backbone,
-                                         args.dataset, source, target, i)
-                    else:
-                        seed += i
+    # num_unks = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+    if args.mode == 'ODA':
+        num_unks = [3, 4, 5, 6, 7, 8, 9]
+    else:
+        raise NotImplementedError
 
-                    source_txt = source_template.format(source, n_unk)
-                    target_txt = target_template.format(target, n_unk)
+    for n_unk in num_unks:
+        for i in range(args.n_start, args.n_trials):
+            base_dir = osp.join(
+                'output', args.method,
+                args.dataset + '_' + args.mode + '_' + str(n_unk),
+                args.backbone + exp_info)
+            output_dir = osp.join(base_dir, source + '_to_' + target,
+                                  str(i + 1))
+            seed = args.seed
+            if seed < 0:
+                seed = seed_hash(args.method, args.backbone, args.dataset,
+                                 source, target, i)
+            else:
+                seed += i
 
-                    n_total = 12
-                    n_source_private = 0
-                    n_share = n_total - n_source_private - n_unk
+            source_txt = source_template.format(source, n_unk)
+            target_txt = target_template.format(target, n_unk)
 
-                    os.system(f'python train_unk_amp.py '
-                              f'--config  {config_file} '
-                              f'--source_data {source_txt} '
-                              f'--target_data {target_txt} '
-                              f'--gpu {args.gpu} '
-                              f'--output-dir {output_dir} '
-                              f'--seed {seed} '
-                              f'--n_share {n_share} '
-                              f'--n_source_private {n_source_private} ')
+            n_total = 12
+            n_source_private = 0
+            n_share = n_total - n_source_private - n_unk
+
+            os.system(f'python train_unk_amp.py '
+                      f'--config  {config_file} '
+                      f'--source_data {source_txt} '
+                      f'--target_data {target_txt} '
+                      f'--gpu {args.gpu} '
+                      f'--output-dir {output_dir} '
+                      f'--seed {seed} '
+                      f'--n_share {n_share} '
+                      f'--n_source_private {n_source_private} ')
