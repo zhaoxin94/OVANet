@@ -86,7 +86,7 @@ def parse_function(*metrics, directory="", end_signal=None):
         msg = ""
         for key, value in output.items():
             if isinstance(value, float):
-                msg += f"{key}: {value:.2f}%. "
+                msg += f"{key}: {value:.4f}%. "
             else:
                 msg += f"{key}: {value}. "
             if key != "file":
@@ -100,7 +100,7 @@ def parse_function(*metrics, directory="", end_signal=None):
     for key, values in metrics_results.items():
         avg = np.mean(values)
         std = np.std(values)
-        print(f"* {key}: {avg:.2f}% +- {std:.2f}%")
+        print(f"* {key}: {avg:.4f}% +- {std:.4f}%")
         output_results[key] = avg
     print("===")
 
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     print("Average performance")
     for key, values in final_results.items():
         avg = np.mean(values)
-        print(f"* {key}: {avg:.2f}%")
+        print(f"* {key}: {avg:.4f}%")
         final_results[key].insert(0, avg)
 
     results_path = osp.join(base_dir, 'collect_results.txt')
