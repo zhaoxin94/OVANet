@@ -105,6 +105,7 @@ if __name__ == '__main__':
                               f'--config  {config_file} '
                               f'--source_data {source_txt} '
                               f'--target_data {target_txt} '
+                              f'--network {args.backbone} '
                               f'--gpu {args.gpu} '
                               f'--output-dir {output_dir} '
                               f'--seed {seed}')

@@ -124,9 +124,9 @@ param_lr_g, param_lr_c = get_models_new(inputs)
 
 ndata = target_folder.__len__()
 
-save_path = os.path.join(args.output_dir, 'model')
-if not os.path.exists(save_path):
-    os.makedirs(save_path)
+save_folder = os.path.join(args.output_dir, 'model')
+if not os.path.exists(save_folder):
+    os.makedirs(save_folder)
 
 
 def train():
@@ -235,7 +235,7 @@ def train():
         if step == 10000:
             if args.save_model:
                 save_name = "model_%s.pth" % (step)
-                save_path = os.path.join(save_path, save_name)
+                save_path = os.path.join(save_folder, save_name)
                 save_model(G, C1, C2, save_path)
 
 

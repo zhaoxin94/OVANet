@@ -11,6 +11,153 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as col
 
 
+def visulaize_TSNE_OSDA_category(feats,
+                                 labels,
+                                 preds,
+                                 n_classes,
+                                 output_dir,
+                                 epoch=None,
+                                 known_color='orangered',
+                                 unknown_color='dodgerblue'):
+    feats = feats.cpu().detach().numpy()
+    labels = labels.cpu().detach().numpy()
+    preds = preds.cpu().detach().numpy()
+
+    known_ind = np.where(labels < n_classes)[0]
+    unknown_ind = np.where(labels >= n_classes)[0]
+
+    known_feats = feats[known_ind]
+    unknown_feats = feats[unknown_ind]
+
+    num_class = n_classes + 1
+    print(f'class number: {num_class}')
+
+    all_feats = np.concatenate([known_feats, unknown_feats], axis=0)
+    all_labels = np.concatenate(
+        (np.zeros(len(known_feats)), np.ones(len(unknown_feats))))
+
+    print('all_feats size:', all_feats.shape)
+    print('all_labels size:', all_labels.shape)
+
+    X_tsne = TSNE(n_components=2, init='pca',
+                  learning_rate='auto').fit_transform(all_feats)
+
+    x_min, x_max = np.min(X_tsne, 0), np.max(X_tsne, 0)
+    X_tsne = (X_tsne - x_min) / (x_max - x_min)
+
+    plt.figure(figsize=(10, 10))
+    colormap = plt.cm.gist_ncar  #nipy_spectral, Set1,Paired
+    colorst = [colormap(i) for i in np.linspace(0, 0.9, num_class)]
+    for i in range(num_class):
+        inds = np.where(labels == i)[0]
+        plt.scatter(X_tsne[inds, 0],
+                    X_tsne[inds, 1],
+                    label=str(i),
+                    color=colorst[i],
+                    s=20)
+    plt.legend()
+    plt.axis('tight')
+    plt.xticks(())  # ignore xticks
+    plt.yticks(())  # ignore yticks
+    ax = plt.gca()
+    ax.set_facecolor('white')
+    if epoch:
+        plt.savefig(os.path.join(output_dir,
+                                 "TSNE_Target_label_{}.pdf".format(epoch)),
+                    format='pdf',
+                    dpi=600)
+    else:
+        plt.savefig(os.path.join(output_dir, "TSNE_Target_label.pdf"),
+                    format='pdf',
+                    dpi=600)
+    plt.close()
+
+    plt.figure(figsize=(10, 10))
+    colormap = plt.cm.gist_ncar  #nipy_spectral, Set1,Paired
+    colorst = [colormap(i) for i in np.linspace(0, 0.9, num_class)]
+    for i in range(num_class):
+        inds = np.where(preds == i)[0]
+        plt.scatter(X_tsne[inds, 0],
+                    X_tsne[inds, 1],
+                    label=str(i),
+                    color=colorst[i],
+                    s=20)
+    plt.legend()
+    plt.axis('tight')
+    plt.xticks(())  # ignore xticks
+    plt.yticks(())  # ignore yticks
+    ax = plt.gca()
+    ax.set_facecolor('white')
+    if epoch:
+        plt.savefig(os.path.join(output_dir,
+                                 "TSNE_Target_pred{}.pdf".format(epoch)),
+                    format='pdf',
+                    dpi=600)
+    else:
+        plt.savefig(os.path.join(output_dir, "TSNE_Target_pred.pdf"),
+                    format='pdf',
+                    dpi=600)
+    plt.close()
+
+def visulaize_TSNE_OSDA_label(feats,
+                              labels,
+                              n_classes,
+                              output_dir,
+                              epoch=None,
+                              known_color='orangered',
+                              unknown_color='dodgerblue'):
+    feats = feats.cpu().detach().numpy()
+    labels = labels.cpu().detach().numpy()
+
+    known_ind = np.where(labels < n_classes)[0]
+    unknown_ind = np.where(labels >= n_classes)[0]
+
+    known_feats = feats[known_ind]
+    unknown_feats = feats[unknown_ind]
+
+    num_class = n_classes + 1
+    print(f'class number: {num_class}')
+
+    all_feats = np.concatenate([known_feats, unknown_feats], axis=0)
+    all_labels = np.concatenate(
+        (np.zeros(len(known_feats)), np.ones(len(unknown_feats))))
+
+    print('all_feats size:', all_feats.shape)
+    print('all_labels size:', all_labels.shape)
+
+    X_tsne = TSNE(n_components=2, init='pca',
+                  learning_rate='auto').fit_transform(all_feats)
+
+    x_min, x_max = np.min(X_tsne, 0), np.max(X_tsne, 0)
+    X_tsne = (X_tsne - x_min) / (x_max - x_min)
+
+    plt.figure(figsize=(10, 10))
+    colormap = plt.cm.gist_ncar #nipy_spectral, Set1,Paired
+    colorst = [colormap(i) for i in np.linspace(0, 0.9, num_class)]
+    for i in range(num_class):
+        inds = np.where(labels==i)[0]
+        plt.scatter(X_tsne[inds, 0],
+                    X_tsne[inds, 1],
+                    label=str(i),
+                    color=colorst[i],
+                    s=20)
+    plt.legend()
+    plt.axis('tight')
+    plt.xticks(())  # ignore xticks
+    plt.yticks(())  # ignore yticks
+    ax = plt.gca()
+    ax.set_facecolor('white')
+    if epoch:
+        plt.savefig(os.path.join(output_dir,
+                                 "TSNE_Target_label{}.pdf".format(epoch)),
+                    format='pdf',
+                    dpi=600)
+    else:
+        plt.savefig(os.path.join(output_dir, "TSNE_Target_label.pdf"),
+                    format='pdf',
+                    dpi=600)
+    plt.close()
+
 def visulaize_TSNE_OSDA(feats,
                         labels,
                         n_classes,
@@ -199,6 +346,10 @@ def test(step,
                 pred_unk = out_open[tmp_range, 0, pred]
                 ind_unk = np.where(pred_unk.data.cpu().numpy() > 0.5)[0]
             pred[ind_unk] = open_class
+            if batch_idx == 0:
+                preds = pred
+            else:
+                preds = torch.cat((preds, pred))
             correct += pred.eq(label_t.data).cpu().sum()
             pred = pred.cpu().numpy()
             k = label_t.data.size()[0]
@@ -263,7 +414,7 @@ def test(step,
     logger.info(output)
     print(output)
 
-    visulaize_TSNE_OSDA(feats, labels, open_class, output_dir)
+    visulaize_TSNE_OSDA_category(feats, labels, preds, open_class, output_dir)
 
     return acc_all, h_score
 
