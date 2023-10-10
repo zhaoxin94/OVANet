@@ -128,7 +128,7 @@ if __name__ == '__main__':
     end_signal = "step 10000"
 
     metrics = []
-    metric_names = ["h score", "acc per class", "acc close all", "acc", "roc"]
+    metric_names = ["acc per class", "h score", "known acc", "unknown"]
     for metric_name in metric_names:
         regex_str = re.compile(fr"{metric_name} ([\.\deE+-]+)")
         metric = {"name": metric_name, "regex": regex_str}
