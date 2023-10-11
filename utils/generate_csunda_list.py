@@ -3,30 +3,56 @@ import os
 
 if __name__ == '__main__':
     # mode: obda, pda, opda
-    mode = 'obda'
-    domains = ["AID", "CLRS", "MLRSN", "OPTIMAL"]
+    mode = 'opda'
+    domains = ["AID", "CLRS", "MLRSN", "OPTIMAL-31"]
 
     # 写到这里了
-    path = osp.join('data', domains[0])
+    path = osp.join('data', domains[1])
     dir_list = os.listdir(path)
     dir_list = sorted(dir_list, key=lambda x: x.lower())
     print(dir_list)
-    print(len(dir_list))
+    print('total {} classes'.format(len(dir_list)))
 
     if mode == 'obda':
-        n_share = 9
-        n_source_private = 0
+        public_classes = [
+            'airport', 'beach', 'farmland', 'forest', 'industrial', 'parking',
+            'residential'
+        ]
+        source_private_classes = []
+        target_private_classes = [
+            'bridge', 'commercial', 'desert', 'meadow', 'mountain', 'overpass',
+            'playground', 'port'
+        ]
+    elif mode == 'pda':
+        public_classes = [
+            'airport', 'beach', 'farmland', 'forest', 'industrial', 'parking',
+            'residential'
+        ]
+        source_private_classes = [
+            'bridge', 'commercial', 'desert', 'meadow', 'mountain', 'overpass',
+            'playground', 'port'
+        ]
+        target_private_classes = []
+    elif mode == 'opda':
+        public_classes = [
+            'airport', 'beach', 'farmland', 'forest', 'industrial', 'parking',
+            'residential'
+        ]
+        source_private_classes = ['bridge', 'commercial', 'desert', 'meadow']
+        target_private_classes = ['mountain', 'overpass', 'playground', 'port']
     else:
         raise NotImplementedError
+    
+    print('public_classes', public_classes)
+    print('source_private_classes:', source_private_classes)
+    print('target_private_classes:', target_private_classes)
 
-    n_source = n_share + n_source_private
-    source_list = dir_list[:n_source]
-    target_list = dir_list[:n_share] + dir_list[n_source:]
+    source_list = public_classes + source_private_classes
+    target_list = public_classes + target_private_classes
 
-    print(source_list)
-    print(len(source_list))
-    print(target_list)
-    print(len(target_list))
+    print('source classes', source_list)
+    print('target classes', target_list)
+
 
     for domain in domains:
         source_path = f"data/{domain}"
